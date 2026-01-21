@@ -15,8 +15,14 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 
 ```{r load-wrangle}
 # load and wrangle the data here
+library(tidyverse)
+library(here)
+library(janitor)
 
+postpartum_depression <- read_csv(here("data", "HIIT-postpartum-depression.csv")) %>% 
+  clean_names()
 
+postpartum_depression[postpartum_depression == "#NULL!"] <- NA
 ```
 
 
@@ -29,6 +35,21 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 ### Figure 4
 ```{r figure-4}
 # Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
+
+# Tidy table for graph
+psychological_wellbeing <- postpartum_depression %>% 
+  select(intervention_group, pre_fs_scale, post_fs_score, postnatal_florishing_scale_score) %>% 
+  mutate(
+    pre_fs_scale = as.numeric(pre_fs_scale),
+    post_fs_score = as.numeric(post_fs_score),
+    postnatal_florishing_scale_score = as.numeric(postnatal_florishing_scale_score)
+  ) %>% 
+  pivot_longer(
+    cols = c(pre_fs_scale, post_fs_score, postnatal_florishing_scale_score),
+    names_to = "time",
+    values_to = "fs_score"
+  )
+  
 ```
 
 
