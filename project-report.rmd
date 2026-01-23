@@ -28,6 +28,7 @@ postpartum_depression[postpartum_depression == "#NULL!"] <- NA
 
 ### Figure 3
 ```{r figure-3}
+
 # Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 
 fig3_postpartum_depression <- postpartum_depression %>% 
@@ -45,10 +46,16 @@ levels <- fig3_postpartum_depression %>%
   pivot_wider(names_from = depression_level, values_from = n) %>% 
   mutate(totals = rowSums(across(c("increased" : "slightly_increased"))))
 
+
+
 #finding percentages
 percents <- levels %>% 
-  mutate("totals" = )
-  
+  rowwise() %>% 
+  mutate(across(c(increased:slightly_increased), 
+                ~ .x/totals*100, 
+                .names = "percent_{.col}"))
+
+
 ```
 
 
