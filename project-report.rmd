@@ -32,17 +32,23 @@ postpartum_depression[postpartum_depression == "#NULL!"] <- NA
 
 fig3_postpartum_depression <- postpartum_depression %>% 
   select(starts_with("Edin")|starts_with("Int")) %>% 
-  rename("edss" = edinburg_postnatal_depression_scale_score) %>% 
+  rename("epdss" = edinburg_postnatal_depression_scale_score) %>% 
   drop_na()
   
   
 levels <- fig3_postpartum_depression %>% 
-  mutate(depression_level = case_when(edss <10 ~ "norm",
-                           edss >=10 & edss<=11 ~ "slightly increased",
-                           edss>11 ~ "increased")) %>% 
+  mutate(depression_level = case_when(epdss <10 ~ "norm",
+                                      epdss <= 11 ~ "slightly_increased",
+                                      epdss > 11 ~ "increased")) %>% 
   group_by(depression_level, intervention_group) %>% 
   count(depression_level) %>% 
-  pivot_wider(id_cols = depression_level, names_from = intervention_group, values_from = "n")
+  pivot_wider(names_from = depression_level, values_from = n) %>% 
+  mutate(totals = rowSums(across(c("increased" : "slightly_increased"))))
+
+#finding percentages
+percents <- levels %>% 
+  mutate("totals" = )
+  
 ```
 
 
