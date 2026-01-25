@@ -38,9 +38,13 @@ fig3_postpartum_depression <- postpartum_depression %>%
   
 #table with totals of each group
 levels <- fig3_postpartum_depression %>% 
-  mutate(depression_level = case_when(epdss <10 ~ "norm",
-                                      epdss <= 11 ~ "slightly_increased",
-                                      epdss > 11 ~ "increased")) %>% 
+  mutate(depression_scale = case_when(epdss < 10 ~ "norm",
+                                      epdss >= 10 & epdss <= 11 ~ "slightly_increased",
+                                      epdss > 11 ~ "increased")) 
+
+
+
+#%>% 
   group_by(depression_level, intervention_group) %>% 
   count(depression_level) %>% 
   pivot_wider(names_from = depression_level, values_from = n) %>% 
@@ -68,11 +72,12 @@ plot <- percents %>%
                                           "HIIT - High Intensity Interval Training Group", 
                                           "EDU - Educational Intervention Group")) %>% 
   ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
-  geom_col() +
-  scale_x_continuous(labels = scales :: percent) +
-  xlim(0.00, 100.00)
+  geom_col(width = 0.2) +
+  scale_x_continuous(labels = scales :: percent_format(scale = 1)) +
+  scale_colour_manual(values = c("#8DB6F8", "#083B92", "#C32113"))
+  theme_minimal()
 plot
-  
+
 ```
 
 
