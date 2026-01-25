@@ -36,7 +36,7 @@ fig3_postpartum_depression <- postpartum_depression %>%
   rename("epdss" = edinburg_postnatal_depression_scale_score) %>% 
   drop_na()
   
-  
+#table with totals of each group
 levels <- fig3_postpartum_depression %>% 
   mutate(depression_level = case_when(epdss <10 ~ "norm",
                                       epdss <= 11 ~ "slightly_increased",
@@ -53,9 +53,26 @@ percents <- levels %>%
   rowwise() %>% 
   mutate(across(c(increased:slightly_increased), 
                 ~ .x/totals*100, 
-                .names = "percent_{.col}"))
+                .names = "percent_{.col}")) %>% 
+  select(c(intervention_group, starts_with("percent"))) %>% 
+  pivot_longer(starts_with("percent"), names_to = "depression_score", values_to = "percents") %>% 
+  mutate(intervention_group = recode(intervention_group, "1" = "EDU - Educational Intervention Group",
+                                     "2" = "HIIT - High Intensity Interval Training Group"))
 
-
+#plot chart 
+plot <- percents %>% 
+  mutate(depression_score = fct_relevel(depression_score, 
+                                        "percent_norm", "percent_slightly_increased", 
+                                        "percent_increased")) %>% 
+  mutate(intervention_group = fct_relevel(intervention_group, 
+                                          "HIIT - High Intensity Interval Training Group", 
+                                          "EDU - Educational Intervention Group")) %>% 
+  ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
+  geom_col() +
+  scale_x_continuous(labels = scales :: percent) +
+  xlim(0.00, 100.00)
+plot
+  
 ```
 
 
