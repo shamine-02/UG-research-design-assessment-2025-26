@@ -57,8 +57,8 @@ percents <- levels %>%
                 .names = "percent_{.col}")) %>% 
   select(c(intervention_group, starts_with("percent"))) %>% 
   pivot_longer(starts_with("percent"), names_to = "depression_score", values_to = "percents") %>% 
-  mutate(intervention_group = recode(intervention_group, "1" = "EDU - Educational Intervention Group",
-                                     "2" = "HIIT - High Intensity Interval Training Group"))
+  mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
+                                     "1" = "HIIT - High Intensity Interval Training Group"))
 
 #plot chart 
 plot <- percents %>% 
@@ -72,9 +72,9 @@ plot <- percents %>%
   geom_col(width = 0.2) +
   scale_x_continuous(breaks = seq(0.00, 100.00, by = 10), 
                      labels = scales :: label_percent(scale = 1)) +
-  scale_fill_manual(labels = c("percent_increased" = "increased severity of PPD symptoms (12 or more points)", 
+  scale_fill_manual(labels = c("percent_norm" = "range indicating the norm (below 10 points)",
                                "percent_slightly_increased" = "slightly increased severity of PPD symptoms (10-11 points)",
-                               "percent_norm" = "range indicating the norm below 10 points"),
+                               "percent_increased" = "increased severity of PPD symptoms (12 or more points)"),
                                values = c("percent_norm" = "#8DB6F8", 
                                  "percent_slightly_increased" = "#083B92", 
                                  "percent_increased" = "#C32113")) +
