@@ -34,17 +34,14 @@ postpartum_depression[postpartum_depression == "#NULL!"] <- NA
 fig3_postpartum_depression <- postpartum_depression %>% 
   select(starts_with("Edin")|starts_with("Int")) %>% 
   rename("epdss" = edinburg_postnatal_depression_scale_score) %>% 
+  transform(epdss = as.numeric(epdss)) %>% 
   drop_na()
   
 #table with totals of each group
 levels <- fig3_postpartum_depression %>% 
-  mutate(depression_scale = case_when(epdss < 10 ~ "norm",
+  mutate(depression_level = case_when(epdss < 10 ~ "norm",
                                       epdss >= 10 & epdss <= 11 ~ "slightly_increased",
-                                      epdss > 11 ~ "increased")) 
-
-
-
-#%>% 
+                                      epdss > 11 ~ "increased")) %>% 
   group_by(depression_level, intervention_group) %>% 
   count(depression_level) %>% 
   pivot_wider(names_from = depression_level, values_from = n) %>% 
@@ -66,15 +63,18 @@ percents <- levels %>%
 #plot chart 
 plot <- percents %>% 
   mutate(depression_score = fct_relevel(depression_score, 
-                                        "percent_norm", "percent_slightly_increased", 
-                                        "percent_increased")) %>% 
+                                        "percent_increased", "percent_slightly_increased", 
+                                        "percent_norm")) %>% 
   mutate(intervention_group = fct_relevel(intervention_group, 
                                           "HIIT - High Intensity Interval Training Group", 
                                           "EDU - Educational Intervention Group")) %>% 
   ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
   geom_col(width = 0.2) +
-  scale_x_continuous(labels = scales :: percent_format(scale = 1)) +
-  scale_colour_manual(values = c("#8DB6F8", "#083B92", "#C32113"))
+  scale_x_continuous(breaks = seq(0.00, 100.00, by = 10), 
+                     labels = scales :: percent_format(scale = 1)) +
+  scale_colour_manual(values = c("#8DB6F8", "#083B92", "#C32113")) +
+  labs(x = "",
+       y = "" )+
   theme_minimal()
 plot
 
