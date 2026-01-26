@@ -71,11 +71,18 @@ plot <- percents %>%
   ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
   geom_col(width = 0.2) +
   scale_x_continuous(breaks = seq(0.00, 100.00, by = 10), 
-                     labels = scales :: percent_format(scale = 1)) +
-  scale_colour_manual(values = c("#8DB6F8", "#083B92", "#C32113")) +
-  labs(x = "",
-       y = "" )+
-  theme_minimal()
+                     labels = scales :: label_percent(scale = 1)) +
+  scale_fill_manual(labels = c("percent_increased" = "increased severity of PPD symptoms (12 or more points)", 
+                               "percent_slightly_increased" = "slightly increased severity of PPD symptoms (10-11 points)",
+                               "percent_norm" = "range indicating the norm below 10 points"),
+                               values = c("percent_norm" = "#8DB6F8", 
+                                 "percent_slightly_increased" = "#083B92", 
+                                 "percent_increased" = "#C32113")) +
+  labs(x = "", y = "") +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom",
+        #legend.location = "plot",
+        legend.direction = "vertical")
 plot
 
 ```
