@@ -81,8 +81,9 @@ plot <- percents %>%
   labs(x = "", y = "") +
   theme(legend.title = element_blank(),
         legend.position = "bottom",
-        #legend.location = "plot",
-        legend.direction = "vertical")
+        legend.direction = "vertical",
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5))
 plot
 
 ```
