@@ -65,8 +65,8 @@ percents <- levels %>%
 plot <- percents %>% 
   mutate(depression_score = fct_relevel(depression_score, 
                                         "percent_increased", "percent_slightly_increased", 
-                                        "percent_norm")) %>% 
-  mutate(intervention_group = fct_relevel(intervention_group, 
+                                        "percent_norm"),
+         intervention_group = fct_relevel(intervention_group, 
                                            "HIIT - High Intensity Interval Training Group", 
                                            "EDU - Educational Intervention Group")) %>% 
   ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
