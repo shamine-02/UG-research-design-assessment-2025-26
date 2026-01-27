@@ -114,9 +114,10 @@ improved_plot <- levels_2 %>%
                     values = c("norm" = "#8DB6F8", 
                                  "slightly_increased" = "#083B92", 
                                  "increased" = "#C32113")) +
-    labs(x = "Intervention Group", y = "Count") +
-  theme(legend.title = element_text("Categories of Edinburgh Postnatal Depression Scale"),
-        legend.position = "bottom",
+    labs(x = "Intervention Group", 
+         y = "Count",
+         fill = "Categories of Edinburgh Postnatal Depression Scale") +
+  theme(legend.position = "bottom",
         legend.direction = "vertical",
         panel.background = element_rect(fill = "white"),
         panel.grid.major.y = element_line(colour = "#D8D8D8", linewidth = 0.5))
