@@ -120,7 +120,8 @@ improved_plot <- levels_2 %>%
   theme(legend.position = "bottom",
         legend.direction = "vertical",
         panel.background = element_rect(fill = "white"),
-        panel.grid.major.y = element_line(colour = "#D8D8D8", linewidth = 0.5))
+        panel.grid.major.y = element_line(colour = "#3B3B3B", linewidth = 0.5),
+        panel.grid.minor.y = element_line(colour = "#D8D8D8", linewidth = 0.5))
   
 
 improved_plot
