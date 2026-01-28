@@ -1,0 +1,148 @@
+---
+title: "Group project assessment"
+author: '[update with group members'' exam numbers]'
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+NOTE: Please don't edit this template directly. Use `File` > `Save as` to create a copy of this document, rename it (remove the word "template" from the file name) and use that new version to write your report. Make sure to also update the Title and Author fields in the YAML of your .Rmd file.
+
+## Task 1: Reproducing and improving figures
+
+```{r load-wrangle}
+# load and wrangle the data here
+library(tidyverse)
+library(here)
+library(janitor)
+
+postpartum_depression <- read_csv(here("data", "HIIT-postpartum-depression.csv")) %>% 
+  clean_names()
+
+postpartum_depression[postpartum_depression == "#NULL!"] <- NA
+```
+
+
+### Figure 3
+```{r figure-3}
+
+# Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
+
+fig3_postpartum_depression <- postpartum_depression %>% 
+  select(starts_with("Edin")|starts_with("Int")) %>% 
+  rename("epdss" = edinburg_postnatal_depression_scale_score) %>% 
+  transform(epdss = as.numeric(epdss)) %>% 
+  drop_na()
+  
+#table with totals of each group
+levels <- fig3_postpartum_depression %>% 
+  mutate(depression_level = case_when(epdss < 10 ~ "norm",
+                                      epdss >= 10 & epdss <= 11 ~ "slightly_increased",
+                                      epdss > 11 ~ "increased")) %>% 
+  group_by(depression_level, intervention_group) %>% 
+  count(depression_level) %>% 
+  pivot_wider(names_from = depression_level, values_from = n) %>% 
+  mutate(totals = rowSums(across(c("increased" : "slightly_increased"))))
+
+
+
+#finding percentages
+percents <- levels %>% 
+  rowwise() %>% 
+  mutate(across(c(increased:slightly_increased), 
+                ~ .x/totals*100, 
+                .names = "percent_{.col}")) %>% 
+  select(c(intervention_group, starts_with("percent"))) %>% 
+  pivot_longer(starts_with("percent"), names_to = "depression_score", values_to = "percents") %>% 
+  mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
+                                     "1" = "HIIT - High Intensity Interval Training Group"))
+
+
+#plot chart 
+plot <- percents %>% 
+  mutate(depression_score = fct_relevel(depression_score, 
+                                        "percent_increased", "percent_slightly_increased", 
+                                        "percent_norm"),
+         intervention_group = fct_relevel(intervention_group, 
+                                           "HIIT - High Intensity Interval Training Group", 
+                                           "EDU - Educational Intervention Group")) %>% 
+  ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
+  geom_col(width = 0.25) +
+  scale_x_continuous(breaks = seq(0.00, 100.00, by = 10), 
+                     labels = scales :: label_percent(scale = 1)) +
+  scale_fill_manual(breaks = c("percent_norm", "percent_slightly_increased", "percent_increased"), 
+                    labels = c("percent_norm" = "range indicating the norm (below 10 points)",
+                               "percent_slightly_increased" = 
+                                 "slightly increased severity of PPD symptoms (10-11 points)",
+                               "percent_increased" = "increased severity of PPD symptoms (12 or more points)"),
+                    values = c("percent_norm" = "#8DB6F8", 
+                                 "percent_slightly_increased" = "#083B92", 
+                                 "percent_increased" = "#C32113")) +
+  labs(x = "", y = "") +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "vertical",
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5),
+        axis.ticks.y = element_blank())
+plot
+
+
+#preparing data to make a better plot
+levels_2 <- levels %>%
+  mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
+                                     "1" = "HIIT - High Intensity Interval Training Group")) %>% 
+  select(!totals) %>% 
+  pivot_longer(c(increased:slightly_increased), names_to = "depression_score", values_to = "count")
+
+
+#improved plot
+improved_plot <- levels_2 %>% 
+   mutate(depression_score = fct_relevel(depression_score, 
+                                        "increased", "slightly_increased", 
+                                        "norm")) %>% 
+  ggplot(aes(x = intervention_group, y = count, fill = depression_score)) +
+  geom_col(width = 0.3) +
+    scale_fill_manual(breaks = c("norm", "slightly_increased", "increased"), 
+                    labels = c("norm" = "range indicating the norm (below 10 points)",
+                               "slightly_increased" = 
+                                 "slightly increased severity of PPD symptoms (10-11 points)",
+                               "increased" = "increased severity of PPD symptoms (12 or more points)"),
+                    values = c("norm" = "#8DB6F8", 
+                                 "slightly_increased" = "#083B92", 
+                                 "increased" = "#C32113")) +
+    labs(x = "Intervention Group", 
+         y = "Count",
+         fill = "Categories of Edinburgh Postnatal Depression Scale") +
+  theme(legend.position = "bottom",
+        legend.direction = "vertical",
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(colour = "#3B3B3B", linewidth = 0.5),
+        panel.grid.minor.y = element_line(colour = "#D8D8D8", linewidth = 0.5),
+        panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5))
+  
+
+improved_plot
+
+
+```
+
+
+### Figure 4
+```{r figure-4}
+# Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
+```
+
+
+### Figure 5
+```{r figure-5}
+# Write your code for reproducing, and then improving Figure 5. Present both figures together. Under the figures, explain how you've improved Figure 5 and why you consider this an improvement.
+```
+
+
+## Task 2: FAIR data principles 
+
+## Task 3: Reproducibility brief
