@@ -15,8 +15,6 @@ NOTE: Please don't edit this template directly. Use `File` > `Save as` to create
 
 ```{r load-wrangle}
 # load and wrangle the data here
-
-
 ```
 
 
