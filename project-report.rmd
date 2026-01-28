@@ -42,11 +42,7 @@ psych_wellbeing <- postpartum_depression %>%
   select(intervention_group, pre_fs_scale, post_fs_score, postnatal_florishing_scale_score) %>% 
   mutate(
     # Convert intervention_group before pivoting
-    intervention_group = case_when(
-      intervention_group == 1 | intervention_group == "1" | intervention_group == "HIIT" ~ "HIIT",
-      intervention_group == 2 | intervention_group == "2" | intervention_group == "EDU" ~ "EDU",
-      TRUE ~ as.character(intervention_group)
-    ),
+    intervention_group = recode(intervention_group, "1" = "HIIT - High Intensity Interval Training Group", "2" = "EDU - Education"),
     pre_fs_scale = as.numeric(pre_fs_scale),
     post_fs_score = as.numeric(post_fs_score),
     postnatal_florishing_scale_score = as.numeric(postnatal_florishing_scale_score)
@@ -55,14 +51,15 @@ psych_wellbeing <- postpartum_depression %>%
     cols = c(pre_fs_scale, post_fs_score, postnatal_florishing_scale_score),
     names_to = "time",
     values_to = "fs_score"
-  )
+  ) %>% 
+  drop_na() # remove NA
 
 # Create summary statistics for plotting
 psych_summary <- psych_wellbeing %>% 
   group_by(intervention_group, time) %>% 
   summarise(
-    mean = mean(fs_score, na.rm = TRUE),
-    sd = sd(fs_score, na.rm = TRUE),
+    mean = mean(fs_score),
+    sd = sd(fs_score),
     n = n(),
     se = sd / sqrt(n),
     .groups = "drop"
@@ -82,13 +79,12 @@ ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), 
                 width = 0.08, linewidth = 0.5) +
   geom_text(aes(label = paste0("M = ", round(mean, 2)),
-                hjust = ifelse(intervention_group == "HIIT", -0.15, 1.15)),
+                hjust = ifelse(intervention_group == "HIIT - High Intensity Interval Training Group", -0.15, 1.15)),
             vjust = -0.5, size = 3.2) +
   scale_linetype_manual(
-    values = c("HIIT" = "solid", "EDU" = "dashed"),
-    labels = c("HIIT – High Intensity Interval Training Group", 
-               "EDU – Educational Intervention Group")
-  ) +
+    values = c(
+      "HIIT - High Intensity Interval Training Group" = "solid",
+      "EDU - Education" = "dashed")) +
   labs(
     x = "Psychological well-being (measured with the Flourishing Scale)",
     y = "",
@@ -112,23 +108,21 @@ ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
     labels = sprintf("%.2f", seq(40, 60, 2))
   )
 
+# group 1 = HIIT, group 2 = education
 # Enhanced graph
 ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
-  geom_line(aes(linetype = intervention_group), linewidth = 0.8) +
+  geom_line(aes(colour = intervention_group), linewidth = 0.8) +
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group), 
                 width = 0.08, linewidth = 0.5) +
   geom_text(aes(label = paste0("M = ", round(mean, 2)),
-                hjust = ifelse(intervention_group == "HIIT", -0.15, 1.15)),
+                colour = intervention_group),
             vjust = -0.5, size = 3.2) +
-  scale_linetype_manual(
-    values = c("HIIT" = "solid", "EDU" = "dashed"),
-    labels = c("HIIT – High Intensity Interval Training Group", 
-               "EDU – Educational Intervention Group")
-  ) +
   labs(
     x = "Psychological well-being (measured with the Flourishing Scale)",
     y = "",
-    linetype = ""
+    linetype = "",
+    colour = ""
+    
   ) +
   theme_minimal() +
   theme(
