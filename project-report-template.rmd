@@ -45,14 +45,14 @@ postpartum_depression <- read.csv(here("data", "HIIT-postpartum-depression.csv")
 ```{r figure-5}
 figure_5_data <- postpartum_depression %>% 
   select(intervention_group, pre_sf_12_pcs_physicalhealthscale, post_sf12_pcs, postnatal_sf_12_pcs) %>%
-  drop_na() %>% 
+  filter(!is.na(pre_sf_12_pcs_physicalhealthscale) & (!is.na(post_sf12_pcs) | !is.na(postnatal_sf_12_pcs))) %>% 
   group_by(intervention_group) %>% 
-  summarise(mean_pre = mean(pre_sf_12_pcs_physicalhealthscale),
-            mean_post = mean(as.numeric(post_sf12_pcs)),
-            mean_postnatal = mean(as.numeric(post_sf12_pcs)),
-            sd_pre = sd(pre_sf_12_pcs_physicalhealthscale),
-            sd_post = sd(post_sf12_pcs),
-            sd_postnatal = sd(post_sf12_pcs)) %>% 
+  summarise(mean_pre = mean(pre_sf_12_pcs_physicalhealthscale, na.rm = TRUE),
+            mean_post = mean(post_sf12_pcs, na.rm = TRUE),
+            mean_postnatal = mean(post_sf12_pcs, na.rm = TRUE),
+            sd_pre = sd(pre_sf_12_pcs_physicalhealthscale, na.rm = TRUE),
+            sd_post = sd(post_sf12_pcs, na.rm = TRUE),
+            sd_postnatal = sd(post_sf12_pcs, na.rm = TRUE)) %>% 
   pivot_longer(cols = -intervention_group,
                names_to = c("statistic", "timepoint"),
                names_sep = "_",
@@ -66,7 +66,8 @@ figure_5_graph <- figure_5_data %>%
   ggplot(aes(x = timepoint, y = mean, group = intervention_group, linetype = intervention_group)) + 
   geom_line() +
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd)) +
-  scale_y_continuous(limits = c(35, 60))
+  scale_y_continuous(limits = c(35, 60)) +
+  scale_linetype_manual(name = "", values = c("solid", "dashed"), labels = c("HIIT - High Intensity Interval Training Group", "EDU - Educational Intervention Group"))
 
 figure_5_graph
 ```
