@@ -20,9 +20,10 @@ library(here)
 library(janitor)
 
 postpartum_depression <- read_csv(here("data", "HIIT-postpartum-depression.csv")) %>% 
-  clean_names()
+  clean_names() %>% 
+  mutate(across(where(is.character), ~na_if(., "#NULL!")))
 
-postpartum_depression[postpartum_depression == "#NULL!"] <- NA
+#postpartum_depression[postpartum_depression == "#NULL!"] <- NA
 ```
 
 
