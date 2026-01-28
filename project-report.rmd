@@ -111,6 +111,42 @@ ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
     breaks = seq(40, 60, 2),
     labels = sprintf("%.2f", seq(40, 60, 2))
   )
+
+# Enhanced graph
+ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
+  geom_line(aes(linetype = intervention_group), linewidth = 0.8) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group), 
+                width = 0.08, linewidth = 0.5) +
+  geom_text(aes(label = paste0("M = ", round(mean, 2)),
+                hjust = ifelse(intervention_group == "HIIT", -0.15, 1.15)),
+            vjust = -0.5, size = 3.2) +
+  scale_linetype_manual(
+    values = c("HIIT" = "solid", "EDU" = "dashed"),
+    labels = c("HIIT – High Intensity Interval Training Group", 
+               "EDU – Educational Intervention Group")
+  ) +
+  labs(
+    x = "Psychological well-being (measured with the Flourishing Scale)",
+    y = "",
+    linetype = ""
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 9.5),
+    legend.key.width = unit(1.5, "cm"),
+    plot.margin = margin(20, 20, 20, 20),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+    axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray90")
+  ) +
+  scale_y_continuous( # Adjust y-axis scales
+    limits = c(40, 60), 
+    breaks = seq(40, 60, 2),
+    labels = sprintf("%.2f", seq(40, 60, 2))
+  )
 ```
 
 
