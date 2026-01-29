@@ -83,7 +83,7 @@ plot <- percents %>%
                                  "percent_slightly_increased" = "#083B92", 
                                  "percent_increased" = "#C32113")) +
   labs(x = "", y = "") +
-  theme(axis.text = element_text(colour = "black",size = 8),
+  theme(axis.text = element_text(size = 8),
         legend.title = element_blank(),
         legend.position = "bottom",
         legend.direction = "vertical",
