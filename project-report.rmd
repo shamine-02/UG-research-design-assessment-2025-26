@@ -94,8 +94,8 @@ plot
 
 #preparing data to make a better plot
 levels_2 <- levels %>%
-  mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
-                                     "1" = "HIIT - High Intensity Interval Training Group")) %>% 
+  mutate(intervention_group = recode(intervention_group, "2" = "EDU",
+                                     "1" = "HIIT")) %>% 
   select(!totals) %>% 
   pivot_longer(c(increased:slightly_increased), names_to = "depression_score", values_to = "count")
 
@@ -107,7 +107,7 @@ improved_plot <- levels_2 %>%
                                         "norm")) %>% 
   ggplot(aes(x = intervention_group, y = count, fill = depression_score)) +
   geom_col(width = 0.3) +
-    scale_fill_manual(breaks = c("norm", "slightly_increased", "increased"), 
+  scale_fill_manual(breaks = c("norm", "slightly_increased", "increased"), 
                     labels = c("norm" = "range indicating the norm (below 10 points)",
                                "slightly_increased" = 
                                  "slightly increased severity of PPD symptoms (10-11 points)",
@@ -115,15 +115,17 @@ improved_plot <- levels_2 %>%
                     values = c("norm" = "#8DB6F8", 
                                  "slightly_increased" = "#083B92", 
                                  "increased" = "#C32113")) +
-    labs(x = "Intervention Group", 
-         y = "Count",
-         fill = "Categories of Edinburgh Postnatal Depression Scale") +
-  theme(legend.position = "bottom",
-        legend.direction = "vertical",
+  scale_y_continuous(breaks = seq(0,35, by = 5)) +
+  labs(caption = ("EDU = Educational Intervention Group
+                  HIIT = High Intensity Interval Training Group"),
+       x = "Intervention Group", 
+       y = "Count",
+       fill = "Categories of Edinburgh Postnatal Depression Scale") +
+  theme(axis.ticks = element_blank(),
         panel.background = element_rect(fill = "white"),
         panel.grid.major.y = element_line(colour = "#3B3B3B", linewidth = 0.5),
         panel.grid.minor.y = element_line(colour = "#D8D8D8", linewidth = 0.5),
-        panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5))
+        plot.caption.position = "plot", element_text(vjust = ))
   
 
 improved_plot
