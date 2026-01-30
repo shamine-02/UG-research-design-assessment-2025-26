@@ -171,73 +171,78 @@ psych_summary <- psych_wellbeing %>%
                              "Follow-up\n(± 5 months postpartum)"))
   )
 
-# Create graph
-ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
-  geom_line(aes(linetype = intervention_group), linewidth = 0.8) +
-  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), 
-                width = 0.08, linewidth = 0.5) +
-  geom_text(aes(label = paste0("M = ", round(mean, 2)),
-                hjust = ifelse(intervention_group == "HIIT - High Intensity Interval Training Group", -0.15, 1.15)),
-            vjust = -0.5, size = 3.2) +
+# Plot graph
+ggplot(psych_summary, 
+       aes(x = time, y = mean, group = intervention_group)) +
+  
+  geom_line(
+    aes(linetype = intervention_group),
+    linewidth = 0.8) +
+  
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd),
+    width = 0.08
+  ) +
+  
+  geom_text(
+    aes(label = paste0("M = ", round(mean, 2))),
+    vjust = -0.5,
+    size = 3
+  ) +
+  
   scale_linetype_manual(
-    values = c(
-      "HIIT - High Intensity Interval Training Group" = "solid",
-      "EDU - Education" = "dashed")) +
-  labs(
-    x = "Psychological well-being (measured with the Flourishing Scale)",
-    y = "",
-    linetype = ""
+    values = c("solid", "dashed")
   ) +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom",
-    legend.text = element_text(size = 9.5),
-    legend.key.width = unit(1.5, "cm"),
-    plot.margin = margin(20, 20, 20, 20),
-    axis.text.x = element_text(size = 9),
-    axis.text.y = element_text(size = 9),
-    axis.title.x = element_text(size = 10, margin = margin(t = 10)),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray90")
-  ) +
-  scale_y_continuous( # Adjust y-axis scales
-    limits = c(40, 60), 
+  
+  scale_y_continuous(
     breaks = seq(40, 60, 2),
     labels = sprintf("%.2f", seq(40, 60, 2))
-  )
+  ) +
+  
+  labs(
+    x = "Psychological well-being (Flourishing Scale)",
+    y = NULL,
+    linetype = NULL
+  ) +
+  
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
-# Enhanced graph + add position dodge
-ggplot(psych_summary, aes(x = time, y = mean, group = intervention_group)) +
-  geom_line(aes(colour = intervention_group), linewidth = 0.8) +
-  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group), 
-                width = 0.08, linewidth = 0.5) +
-  geom_text(aes(label = paste0("M = ", round(mean, 2)),
-                colour = intervention_group),
-            vjust = -0.5, size = 3.2) +
-  labs(
-    x = "Psychological well-being (measured with the Flourishing Scale)",
-    y = "",
-    linetype = "",
-    colour = ""
-    
+# Advanced graph
+ggplot(psych_summary,
+       aes(x = time, y = mean, group = intervention_group, colour = intervention_group)) +
+  
+  geom_line(
+    linewidth = 0.9
   ) +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom",
-    legend.text = element_text(size = 9.5),
-    legend.key.width = unit(1.5, "cm"),
-    plot.margin = margin(20, 20, 20, 20),
-    axis.text.x = element_text(size = 9),
-    axis.text.y = element_text(size = 9),
-    axis.title.x = element_text(size = 10, margin = margin(t = 10)),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(color = "gray90")
+  
+  geom_errorbar(
+    aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group),
+    width = 0.08
   ) +
-  scale_y_continuous( # Adjust y-axis scales
-    limits = c(40, 60), 
+  
+  geom_text(
+    aes(label = paste0("M = ", round(mean, 2)),
+        colour = intervention_group),
+    vjust = -0.5,
+    size = 3,
+    show.legend = FALSE # to remove character displayed
+  ) +
+  
+  scale_y_continuous(
     breaks = seq(40, 60, 2),
     labels = sprintf("%.2f", seq(40, 60, 2))
-  )
+  ) +
+  
+  labs(
+    x = "Psychological well-being (Flourishing Scale)",
+    y = NULL,
+    linetype = NULL,
+    colour = NULL
+  ) +
+  
+  theme_minimal() +
+  theme(legend.position = "bottom")
 ```
 
 
