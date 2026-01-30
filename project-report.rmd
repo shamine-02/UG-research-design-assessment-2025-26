@@ -89,7 +89,7 @@ plot <- percents %>%
         legend.direction = "vertical",
         panel.background = element_rect(fill = "white"),
         panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5),
-        axis.ticks.y = element_blank())
+        axis.ticks = element_blank())
 plot
 
 
