@@ -158,6 +158,7 @@ psych_summary <- psych_wellbeing %>%
   summarise(
     mean = mean(fs_score),
     sd = sd(fs_score),
+    n = n(),
     .groups = "drop"
   ) %>% 
   mutate(
@@ -209,7 +210,7 @@ ggplot(psych_summary,
   theme_minimal() +
   theme(legend.position = "bottom")
 
-# Advanced graph - position dodge, comments
+# Advanced graph
 ggplot(psych_summary,
        aes(x = time, y = mean, group = intervention_group, colour = intervention_group)) +
   
