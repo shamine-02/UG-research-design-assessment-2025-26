@@ -55,6 +55,7 @@ categorised_PPD_score <- fig3_postpartum_depression %>%
 #finding percentages
 percents_PPD_score <- categorised_PPD_score %>% 
   #finding percentages in each column and changing the name of the column
+  rowwise() %>% 
   mutate(across(c(increased:slightly_increased), 
                 ~ .x/totals*100, 
                 .names = "percent_{.col}")) %>% 
