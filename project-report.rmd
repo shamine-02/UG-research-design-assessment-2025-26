@@ -30,38 +30,44 @@ postpartum_depression <- read.csv(here("data", "HIIT-postpartum-depression.csv")
 
 # Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 
-fig3_postpartum_depression <- postpartum_depression %>% 
-  select(starts_with("Edin")|starts_with("Int")) %>% 
-  rename("epdss" = edinburg_postnatal_depression_scale_score) %>% 
-  transform(epdss = as.numeric(epdss)) %>% 
+fig3_PPD <- postpartum_depression %>% 
+  select(starts_with("Edin")|starts_with("Int")) %>% #to select cols related to the edinburgh depression scale and intervention group
+  rename("epdss" = edinburg_postnatal_depression_scale_score) %>% #rename for convenience
+  transform(epdss = as.numeric(epdss)) %>% #convert from character to number
   drop_na()
   
 #table with totals of each group
-levels <- fig3_postpartum_depression %>% 
+categorised_PPD_score <- fig3_postpartum_depression %>% 
+  #categorising depression scores
   mutate(depression_level = case_when(epdss < 10 ~ "norm",
                                       epdss >= 10 & epdss <= 11 ~ "slightly_increased",
                                       epdss > 11 ~ "increased")) %>% 
+  #creating totals of each depression score and grouping them by type of intervention
   group_by(depression_level, intervention_group) %>% 
   count(depression_level) %>% 
   pivot_wider(names_from = depression_level, values_from = n) %>% 
+  #finding the totals in each intervention group
   mutate(totals = rowSums(across(c("increased" : "slightly_increased"))))
 
 
 
 #finding percentages
-percents <- levels %>% 
+percents_PPD_score <- categorised_PPD_score %>% 
+  #finding percentages in each column and changing the name of the column
   rowwise() %>% 
   mutate(across(c(increased:slightly_increased), 
                 ~ .x/totals*100, 
                 .names = "percent_{.col}")) %>% 
   select(c(intervention_group, starts_with("percent"))) %>% 
   pivot_longer(starts_with("percent"), names_to = "depression_score", values_to = "percents") %>% 
+  #changing the names of the intervention group - done after plotting to match to the original
   mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
                                      "1" = "HIIT - High Intensity Interval Training Group"))
 
 
 #plot chart 
-plot <- percents %>% 
+original_PPD_plot <- percents_PPD_score %>% 
+  #re-ordering the position each variable appears in the original graph
   mutate(depression_score = fct_relevel(depression_score, 
                                         "percent_increased", "percent_slightly_increased", 
                                         "percent_norm"),
@@ -70,8 +76,10 @@ plot <- percents %>%
                                            "EDU - Educational Intervention Group")) %>% 
   ggplot(aes(x = percents, y = intervention_group, fill = depression_score)) +
   geom_col(width = 0.25) +
-  scale_x_continuous(breaks = seq(0.00, 100.00, by = 10), 
-                     labels = scales :: label_percent(scale = 1)) +
+  #adjusting x-axis scale
+  scale_x_continuous(breaks = seq(0, 100, by = 10), 
+                     labels = scales :: label_percent(accuracy = 0.01, scale = 1)) +
+  #adjusting the figure legend (changing text and fill colour) to match the original
   scale_fill_manual(breaks = c("percent_norm", "percent_slightly_increased", "percent_increased"), 
                     labels = c("percent_norm" = "range indicating the norm (below 10 points)",
                                "percent_slightly_increased" = 
@@ -80,32 +88,41 @@ plot <- percents %>%
                     values = c("percent_norm" = "#8DB6F8", 
                                  "percent_slightly_increased" = "#083B92", 
                                  "percent_increased" = "#C32113")) +
-  labs(x = "", y = "") +
-  theme(legend.title = element_blank(),
+  labs(x = "", y = "") + # removing labels for axis
+  #formatting graph
+  theme(axis.text = element_text(size = 8),
+        legend.title = element_blank(),
         legend.position = "bottom",
         legend.direction = "vertical",
         panel.background = element_rect(fill = "white"),
         panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5),
-        axis.ticks.y = element_blank())
-plot
+        axis.ticks = element_blank())
 
+original_PPD_plot
+
+
+
+##IMPROVED PLOT
 
 #preparing data to make a better plot
-levels_2 <- levels %>%
-  mutate(intervention_group = recode(intervention_group, "2" = "EDU - Educational Intervention Group",
-                                     "1" = "HIIT - High Intensity Interval Training Group")) %>% 
+improved_categorised_PPD <- categorised_PPD_score %>%
+  #re-code intervention group
+  mutate(intervention_group = recode(intervention_group, "2" = "EDU",
+                                     "1" = "HIIT")) %>% 
   select(!totals) %>% 
   pivot_longer(c(increased:slightly_increased), names_to = "depression_score", values_to = "count")
 
 
 #improved plot
-improved_plot <- levels_2 %>% 
+improved_PPD_plot <- improved_categorised_PPD %>% 
+  #re-ordering position of variables on the plot
    mutate(depression_score = fct_relevel(depression_score, 
                                         "increased", "slightly_increased", 
                                         "norm")) %>% 
   ggplot(aes(x = intervention_group, y = count, fill = depression_score)) +
   geom_col(width = 0.3) +
-    scale_fill_manual(breaks = c("norm", "slightly_increased", "increased"), 
+  # #adjusting the figure legend (changing text and fill colour)
+  scale_fill_manual(breaks = c("norm", "slightly_increased", "increased"), 
                     labels = c("norm" = "range indicating the norm (below 10 points)",
                                "slightly_increased" = 
                                  "slightly increased severity of PPD symptoms (10-11 points)",
@@ -113,20 +130,24 @@ improved_plot <- levels_2 %>%
                     values = c("norm" = "#8DB6F8", 
                                  "slightly_increased" = "#083B92", 
                                  "increased" = "#C32113")) +
-    labs(x = "Intervention Group", 
-         y = "Count",
-         fill = "Categories of Edinburgh Postnatal Depression Scale") +
-  theme(legend.position = "bottom",
-        legend.direction = "vertical",
+  #changing break length in scales on y-axis
+  scale_y_continuous(breaks = seq(0,35, by = 5)) +
+  #adding captions and labels to the axis
+  labs(caption = ("EDU = Educational Intervention Group
+                  HIIT = High Intensity Interval Training Group"),
+       x = "Intervention Group", 
+       y = "Count",
+       fill = "Categories of Edinburgh Postnatal Depression Scale") +
+  #final formatting
+  theme(axis.ticks = element_blank(),
         panel.background = element_rect(fill = "white"),
-        panel.grid.major.y = element_line(colour = "#3B3B3B", linewidth = 0.5),
+        panel.grid.major.y = element_line(colour = "darkgrey", linewidth = 0.5),
         panel.grid.minor.y = element_line(colour = "#D8D8D8", linewidth = 0.5),
-        panel.grid.major.x = element_line(colour = "#D8D8D8", linewidth = 0.5))
+        plot.caption.position = "plot", 
+        plot.caption = element_text(size = 10.5))
   
 
-improved_plot
-
-
+improved_PPD_plot
 ```
 
 
