@@ -22,7 +22,6 @@ library(janitor)
 postpartum_depression <- read_csv(here("data", "HIIT-postpartum-depression.csv")) %>% 
   clean_names() %>% 
   mutate(across(where(is.character), ~na_if(., "#NULL!")))
-
 ```
 
 
@@ -38,7 +37,7 @@ fig3_PPD <- postpartum_depression %>%
   drop_na()
   
 #table with totals of each group
-categorised_PPD_score <- fig3_postpartum_depression %>% 
+categorised_PPD_score <- fig3_PPD %>% 
   #categorising depression scores
   mutate(depression_level = case_when(epdss < 10 ~ "norm",
                                       epdss >= 10 & epdss <= 11 ~ "slightly_increased",
@@ -146,7 +145,6 @@ improved_PPD_plot <- improved_categorised_PPD %>%
         panel.grid.minor.y = element_line(colour = "#D8D8D8", linewidth = 0.5),
         plot.caption.position = "plot", 
         plot.caption = element_text(size = 10.5))
-  
 
 improved_PPD_plot
 ```
