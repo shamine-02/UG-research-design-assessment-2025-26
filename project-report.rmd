@@ -1,6 +1,6 @@
 ---
 title: "Group project assessment"
-author: '[update with group members'' exam numbers]'
+author: 'B241450, B249209, B253518'
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -39,7 +39,7 @@ fig3_PPD <- postpartum_depression %>%
   drop_na()
   
 #table with totals of each group
-categorised_PPD_score <- fig3_postpartum_depression %>% 
+categorised_PPD_score <- fig3_PPD %>% 
   #categorising depression scores
   mutate(depression_level = case_when(epdss < 10 ~ "norm",
                                       epdss >= 10 & epdss <= 11 ~ "slightly_increased",
