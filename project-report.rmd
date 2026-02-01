@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ## Task 1: Reproducing and improving figures
 
 ```{r load-wrangle}
@@ -26,8 +25,8 @@ postpartum_depression <- read.csv(here("data", "HIIT-postpartum-depression.csv")
 
 ```
 
-
 ### Figure 3
+
 ```{r figure-3}
 
 # Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
@@ -152,8 +151,8 @@ improved_PPD_plot <- improved_categorised_PPD %>%
 improved_PPD_plot
 ```
 
-
 ### Figure 4
+
 ```{r figure-4}
 # Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
 
@@ -181,7 +180,13 @@ psych_summary <- psych_wellbeing %>%
   summarise(
     mean = mean(fs_score),
     sd = sd(fs_score),
+    
+    # Stats for advanced plot
     n = n(),
+    se = sd/sqrt(n),
+    t_value = qt(0.975, n - 1),
+    ci_lower = mean - t_value * se,
+    ci_upper = mean + t_value * se,
     .groups = "drop"
   ) %>% 
   mutate(
@@ -191,8 +196,6 @@ psych_summary <- psych_wellbeing %>%
                   labels = c("Before the intervention\n(II trimester of pregnancy)", 
                              "After the intervention\n(III trimester of pregnancy)", 
                              "Follow-up\n(± 5 months postpartum)")),
-    # To adjust mean label for y-axis
-    label_y = mean + ifelse(intervention_group == "HIIT - High Intensity Interval Training Group", 0.8, -0.8)
   )
 
 # Plot graph
@@ -208,11 +211,9 @@ ggplot(psych_summary,
     width = 0.08
   ) +
   
-  geom_text(
-    aes(label = paste0("M = ", round(mean, 2)), 
-        y = label_y),
-    size = 3,
-    nudge_x = -0.15
+  geom_text_repel( # To fix labelling on graph
+    aes(label = paste0("M = ", round(mean, 2))),
+    size = 3
   ) +
   
   scale_linetype_manual(
@@ -232,6 +233,8 @@ ggplot(psych_summary,
   
   theme_minimal() +
   theme(legend.position = "bottom")
+  
+  
 
 # Advanced graph
 ggplot(psych_summary,
@@ -242,29 +245,29 @@ ggplot(psych_summary,
   ) +
   
   geom_errorbar(
-    aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group),
+    aes(ymin = ci_lower, ymax = ci_upper, colour = intervention_group),
     width = 0.08,
-    position = position_dodge(0.1) # slightly offsets errorbar
+    position = position_dodge(0.07) # slightly offsets errorbar
   ) +
   
-  geom_text(
-    aes(label = paste0("M = ", round(mean, 2)),
-        y = label_y,
+  geom_text_repel(
+    aes(label = paste0("M = ", round(mean, 2), "\n  n = ", n),
         colour = intervention_group),
     size = 3,
-    nudge_x = -0.15,
     show.legend = FALSE # to remove character displayed by legend
   ) +
   
   scale_y_continuous(
-    breaks = seq(40, 60, 2)
+    breaks = seq(40, 60, 2),
+    labels = sprintf("%.2f", seq(40, 60, 2)),
   ) +
   
   labs(
     x = "Psychological well-being (Flourishing Scale)",
     y = "Mean",
     linetype = NULL,
-    colour = NULL
+    colour = NULL,
+    caption = "The error bars represent t-based 95% confidence interval (CI) bars"
   ) +
   
   theme_minimal() +
@@ -272,6 +275,7 @@ ggplot(psych_summary,
 ```
 
 ### Figure 5
+
 ```{r figure-5}
 #selecting just the relevant columns from the main data and removing any with NA's from this new set
 figure_5_data <- postpartum_depression %>% 
@@ -402,8 +406,16 @@ figure_5_graph_improved
 
 ```
 
-
 ## Task 2: FAIR data principles
+
+The dataset provided contains missing metadata: while the authors of the study are clear, they failed to identify exactly who collected and analysed the data, thereby decreasing the findability of the dataset. However, other aspects of the metadata are clear: the year of data collection is given, and the title of the dataset is clear and concise. Additionally, it is clear that the dataset is an Excel document, there is a persistent identifier in the form of a DOI and contact details for one of the researchers are given. These factors all influence the findability of the data. However, while the naming of the folder for the dataset is clear, the naming conventions of columns in the dataset itself were variable, for example, they switch between using ‘fs’ and ‘flourishing scale’. For lay audiences, these acronyms can be hard to decipher. This issue is compounded by the lack of explanation of these acronyms in the supporting information. While definitions of the acronyms can be found in the tables included in the original article, explanations of acronyms used should be included in the metadata to make the dataset FAIRer by increasing interoperability. Additionally, metadata regarding what ‘1’ and ‘2’ means in terms of intervention groups is missing. Correcting this would result in greater interoperability. The dataset is available under a Creative Commons International licence, allowing anyone to download the dataset and modify it. The data includes no identifiable information, so doesn’t require authentication or authorisation. This increases its accessibility and reusability. The dataset is available on Mendeley Data and archived in the Data Archiving and Network Services (DANS) where it is stored ‘in perpetuity’ (Mendeley Data, n.d.), meaning that the metadata of the dataset will be available in the DANS even if the original dataset is deleted, increasing its accessibility.
 
 ## Task 3: Reproducibility brief
 
+The dataset is publicly available online and easy to navigate, allowing for independent reanalysis of the data. This accessibility was essential, as it enabled us to attempt replication of the figures presented above. The software used for statistical analysis was explicitly stated, supporting replication of the analytical approach. The intervention methods were also clearly described, allowing them to be replicated in future studies. Furthermore, links and references to the original papers for the questionnaires and scales used were provided, enabling consistent reuse of validated measurement tools.
+
+The paper currently lacks a few key details reducing its reproducibility. Firstly, they do not provide the exact scripts used to analyse and plot the data, preventing exact recreation, and instead requiring guesswork in what calculations and exclusions to use. Discrepancies between our results and those reported in the original study suggest that additional information such as more detailed coding procedures or data processing steps would be required to ensure full reproducibility The paper discussed using G\*Power for calculating minimum sample size without reporting the means and SDs used for this, the effect size they expected, or the test used for this calculation. This reduces reproducibility as we cannot verify the studies methodology is correct so recreating their other steps has less utility. This is because we do not know the justification for the sample size or how realistic the expected effect size was. For each result they analysed and plotted, they do not provide sample size for each group, meaning we don’t know how many of the stated participant numbers were excluded from the analysis, meaning we cannot exclude the same when doing this. Finally, they do not provide specific distributions of follow up time within the ±1 month, possibly creating variation when reproducing the study.
+
+**References**
+
+Mendeley Data (n.d.). *Dataset Archiving.* Available at: <https://data.mendeley.com/archive-process> (Accessed: 31 Jan. 2026).
