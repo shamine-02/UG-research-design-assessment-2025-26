@@ -182,7 +182,13 @@ psych_summary <- psych_wellbeing %>%
   summarise(
     mean = mean(fs_score),
     sd = sd(fs_score),
+    
+    # Stats for advanced plot
     n = n(),
+    se = sd/sqrt(n),
+    t_value = qt(0.975, n - 1),
+    ci_lower = mean - t_value * se,
+    ci_upper = mean + t_value * se,
     .groups = "drop"
   ) %>% 
   mutate(
@@ -207,7 +213,7 @@ ggplot(psych_summary,
     width = 0.08
   ) +
   
-  geom_text_repel( # To fix labellin on graph
+  geom_text_repel( # To fix labelling on graph
     aes(label = paste0("M = ", round(mean, 2))),
     size = 3
   ) +
@@ -229,6 +235,8 @@ ggplot(psych_summary,
   
   theme_minimal() +
   theme(legend.position = "bottom")
+  
+  
 
 # Advanced graph
 ggplot(psych_summary,
@@ -239,27 +247,29 @@ ggplot(psych_summary,
   ) +
   
   geom_errorbar(
-    aes(ymin = mean - sd, ymax = mean + sd, colour = intervention_group),
+    aes(ymin = ci_lower, ymax = ci_upper, colour = intervention_group),
     width = 0.08,
-    position = position_dodge(0.1) # slightly offsets errorbar
+    position = position_dodge(0.07) # slightly offsets errorbar
   ) +
   
   geom_text_repel(
-    aes(label = paste0("M = ", round(mean, 2), "\n n = ", n),
+    aes(label = paste0("M = ", round(mean, 2), "\n  n = ", n),
         colour = intervention_group),
     size = 3,
     show.legend = FALSE # to remove character displayed by legend
   ) +
   
   scale_y_continuous(
-    breaks = seq(40, 60, 2)
+    breaks = seq(40, 60, 2),
+    labels = sprintf("%.2f", seq(40, 60, 2)),
   ) +
   
   labs(
     x = "Psychological well-being (Flourishing Scale)",
     y = "Mean",
     linetype = NULL,
-    colour = NULL
+    colour = NULL,
+    caption = "The error bars represent t-based 95% confidence interval (CI) bars"
   ) +
   
   theme_minimal() +
