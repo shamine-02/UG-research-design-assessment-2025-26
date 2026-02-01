@@ -13,11 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-wrangle}
 # load and wrangle the data here
-library(tidyverse)
-library(here)
-library(patchwork)
-library(janitor)
-library(ggrepel)
+library(tidyverse) 
+library(here) #used to load data easier 
+library(janitor) #used for the clean names function
+library(ggrepel) #automatically aligns text in a graph to the correct place
 
 postpartum_depression <- read.csv(here("data", "HIIT-postpartum-depression.csv")) %>% 
   clean_names() %>% 
@@ -278,54 +277,132 @@ ggplot(psych_summary,
 ### Figure 5
 
 ```{r figure-5}
+#selecting just the relevant columns from the main data and removing any with NA's from this new set
 figure_5_data <- postpartum_depression %>% 
-  select(intervention_group, pre_sf_12_pcs_physicalhealthscale, post_sf12_pcs, postnatal_sf_12_pcs) %>%
- drop_na() %>% 
-  group_by(intervention_group) %>% 
-  summarise(mean_pre = mean(pre_sf_12_pcs_physicalhealthscale),
+  select(intervention_group, pre_sf_12_pcs_physicalhealthscale, post_sf12_pcs, postnatal_sf_12_pcs) %>% 
+ drop_na() 
+  
+
+
+#-----------creating data that will be used for the original graph recreation-----------
+figure_5_original_graph_data <-  figure_5_data %>% 
+  
+  #calculating means and sd from each timepoint for each group
+  group_by(intervention_group) %>%  
+  summarise(mean_pre  = mean(pre_sf_12_pcs_physicalhealthscale),
             mean_post = mean(as.numeric(post_sf12_pcs)),
             mean_postnatal = mean(as.numeric(postnatal_sf_12_pcs)),
             sd_pre = sd(pre_sf_12_pcs_physicalhealthscale),
             sd_post = sd(as.numeric(post_sf12_pcs)),
             sd_postnatal = sd(as.numeric(postnatal_sf_12_pcs))) %>% 
-  pivot_longer(cols = -intervention_group,
+  
+  #creates separate columns for whether its mean or sd and the timepoint
+  pivot_longer(cols = -intervention_group, 
                names_to = c("statistic", "timepoint"),
                names_sep = "_",
                values_to = "value") %>% 
+  
+  #turning mean and sd into separate columns ready to plot
   pivot_wider(names_from = statistic,
               values_from = value) %>% 
-  mutate(timepoint = factor(timepoint, levels = c("pre", "post", "postnatal"))) %>% 
-  mutate(intervention_group = factor(intervention_group))
+ 
+  #turning timepoint into a factor and ordering it ready to plot
+ mutate(timepoint = factor(timepoint, levels = c("pre", "post", "postnatal")),
+        intervention_group = factor(intervention_group))
 
-figure_5_graph_original <- figure_5_data %>% 
+
+
+#--------------code for plotting the recreation of the original study's figure 5------------
+figure_5_graph_original <- figure_5_original_graph_data %>% 
   ggplot(aes(x = timepoint, y = mean, group = intervention_group, linetype = intervention_group)) + 
   geom_line() +
-  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd)) +
-  scale_y_continuous(limits = c(35, 60)) +
-  scale_linetype_manual(name = "", values = c("solid", "dashed"), labels = c("HIIT - High Intensity Interval Training Group", "EDU - Educational Intervention Group")) +
+  #plotting an error bar with sd
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.08, linetype = "solid") + 
+  #adding labels for each point
+  geom_text_repel(aes(label = round(mean, 2))) +
+  #setting the range of y axis displayed on the graph (had to use scales package to get 2dp)
+  scale_y_continuous(limits = c(35, 60), labels = scales::label_number(accuracy = 0.01)) +
+  #setting up the line types for the groups and their labels
+  scale_linetype_manual(name = "", values = c("solid", "dotted"), labels = c("HIIT - High Intensity Interval Training Group", "EDU - Educational Intervention Group")) +
+  #setting labels for the different timepoints on the x axis
    scale_x_discrete(labels = c( pre ="Before the intervention\n(II Trimester of Pregnancy)", post = "After the Intervention\n(III Trimester of Pregnancy)", postnatal = "Follow Up\n(± 5 Moths Postpartum)"))+
-  xlab(bold("Physical Health") ~ "(measured with the Short Form Health Survey - physical subscale") +
-    theme(legend.position = "bottom")
+  
+  xlab(bold("Physical Health") ~ "(measured with the Short Form Health Survey - physical subscale)") +
+  ylab(NULL) +#removing unwanted y axis label 
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+    labs(caption = "Figure 5: Between-group differences in physical health. Note. The figure shows standard deviation (SD) bars.")
 
-#Improved Graph Code for Figure 5
-figure_5_graph_improved <- figure_5_data %>% 
+
+#-----------code for creating data to plot for my improved figure 5----------------
+figure_5_improved_graph_data <-  figure_5_data %>% 
+  group_by(intervention_group) %>%  
+  #calculating means for each group and timepoint
+  summarise(mean_pre = mean(pre_sf_12_pcs_physicalhealthscale),
+            mean_post = mean(as.numeric(post_sf12_pcs)),
+            mean_postnatal = mean(as.numeric(postnatal_sf_12_pcs)),
+            #calculating sd for each group and timepoint
+            sd_pre = sd(pre_sf_12_pcs_physicalhealthscale),
+            sd_post = sd(as.numeric(post_sf12_pcs)),
+            sd_postnatal = sd(as.numeric(postnatal_sf_12_pcs)),
+            #calculating sample size for each group and timepoint
+            sample_sizes = n()) %>% 
+  
+   #creates separate columns for whether its mean or sd and the timepoint
+  pivot_longer(cols = -c(intervention_group, sample_sizes), 
+               names_to = c("statistic", "timepoint"),
+               names_sep = "_",
+               values_to = "value") %>% 
+   #turning mean and sd into separate columns ready to plot
+  pivot_wider(names_from = statistic,
+              values_from = value) %>% 
+  #calculating standard errors, then t values, then the confidence intervals for each point
+  mutate(standard_error = sd / sqrt(sample_sizes),
+         t_value_95_percent = qt(0.975, sample_sizes - 1),
+         ci_lower = mean - t_value_95_percent * standard_error,
+         ci_upper = mean + t_value_95_percent * standard_error,
+         #setting an order for the timepoint
+    timepoint = factor(timepoint, levels = c("pre", "post", "postnatal")),
+    intervention_group = factor(intervention_group))
+
+
+#Creating a function to calculate the sample size of each intervention group
+sample_size <-function(group){
+  figure_5_data %>% 
+  filter(intervention_group == group) %>% 
+  summarise(n=n()) %>% 
+  pull(n)
+}
+
+#calculating the size of each sample group
+n_hiit <- sample_size("1")
+n_edu <- sample_size("2")
+
+
+#-------------Code to plot the improved figure 5-----------------
+figure_5_graph_improved <- figure_5_improved_graph_data %>% 
   ggplot(aes(x = timepoint, y = mean, group = intervention_group, colour = intervention_group)) + 
   geom_line() +
-  geom_point() +
-  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), position = position_dodge(width = 0.1)) +
-  scale_y_continuous(limits = c(35, 60)) +
-  scale_linetype_manual(name = "", values = c("solid", "dashed"), labels = c("HIIT - High Intensity Interval Training Group", "EDU - Educational Intervention Group")) +
- scale_x_discrete(labels = c( pre ="Before the intervention\n(II Trimester of Pregnancy)", post = "After the Intervention\n(III Trimester of Pregnancy)", postnatal = "Follow Up\n(± 5 Moths Postpartum)"))+
-  geom_text(aes(label = round(mean, 2))) +
-  theme(legend.position = "bottom") 
+  #setting error bars using confidence intervals
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = 0.1), width = 0.08) +
+  #setting colours for the two lines and labelling the legend with sample size
+  scale_colour_manual(name = "", values = c("salmon", "cyan3"), labels = c(paste0("HIIT - High Intensity Interval Training Group (n= ", n_hiit, ")"), paste0("EDU - Educational Intervention Group (n= ", n_edu, ")"))) +
+  #labelling the three time points on the x axis
+ scale_x_discrete(labels = c( pre ="Before the intervention\n(II Trimester of Pregnancy)", post  = "After the Intervention\n(III Trimester of Pregnancy)", postnatal = "Follow Up\n(± 5 Moths Postpartum)"))+
+  #adding labels for each point with the mean
+  geom_text_repel(aes(label = round(mean, 2))) +
   
+    xlab(bold("Physical Health") ~ "(measured with the Short Form Health Survey - physical subscale)") +
+  ylab("Mean Physical Health Score")+
+    #setting the range of y axis displayed on the graph (had to use scales package to get 2dp)
+  scale_y_continuous(limits = c(42.5, 52.5), labels = scales::label_number(accuracy = 0.01)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(caption = "Figure 5: Between-group differences in physical health. Note. The figure shows confidence interval bars at 95%.")
 
+#----------Displaying the two graphs-----------
 figure_5_graph_original
-
 figure_5_graph_improved
-
-
-figure_5_graph_original + figure_5_graph_improved
 
 ```
 
