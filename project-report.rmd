@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Task 1: Reproducing and improving figures
 
 ```{r load-wrangle}
-# load and wrangle the data here
 library(tidyverse) 
 library(here) #used to load data easier 
 library(janitor) #used for the clean names function
@@ -28,8 +27,6 @@ postpartum_depression <- read.csv(here("data", "HIIT-postpartum-depression.csv")
 ### Figure 3
 
 ```{r figure-3}
-
-# Write your code for reproducing, and then improving Figure 3. Present both figures together. Under the figures, explain how you've improved Figure 3 and why you consider this an improvement.
 
 fig3_PPD <- postpartum_depression %>% 
   select(starts_with("Edin")|starts_with("Int")) %>% #to select cols related to the edinburgh depression scale and intervention group
@@ -150,12 +147,18 @@ improved_PPD_plot <- improved_categorised_PPD %>%
 
 improved_PPD_plot
 ```
+-Plot type changed to a stacked bar charts with the counts of each category of depression score - allows for proportions of score categories in each group to still be seen and shows the differences in totals between intervention groups.  
+-The stacked bar chart highlights the incorrect numbers of people in each intervention stated by the researchers (removed 6 data points from EDU group) 
+-More breaks added, making it easier to read values for each depression score category from the graph 
+-Intervention groups caption added - makes the x-axis less clustered 
+-Added a legend title, clarifying what the legend is referring to   
+
+
+
 
 ### Figure 4
 
 ```{r figure-4}
-# Write your code for reproducing, and then improving Figure 4. Present both figures together. Under the figures, explain how you've improved Figure 4 and why you consider this an improvement.
-
 
 # Tidy table for graph
 psych_wellbeing <- postpartum_depression %>% 
@@ -264,7 +267,7 @@ ggplot(psych_summary,
   
   labs(
     x = "Psychological well-being (Flourishing Scale)",
-    y = "Mean",
+    y = "Mean Flourishing Scale Score",
     linetype = NULL,
     colour = NULL,
     caption = "The error bars represent t-based 95% confidence interval (CI) bars"
@@ -273,6 +276,15 @@ ggplot(psych_summary,
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
+Figure Four only:
+-Sample sizes are explicitly labelled as “n” to allow the reader to understand what data was used in calculations and make judgements on whether the amount is useful
+
+Changes to Figures Four and Five:
+-Distinct colours were used for each intervention group, with position dodging applied to make it more obvious which group was which and make the separate error bars easier to spot
+-A figure caption was added to clarify that error bars represent confidence intervals..
+-The y-axis’ were labelled with to make it clearer what has been plotted on the graph
+-We changed the standard deviation error bars in each figure to confidence interval. This shows the uncertainty about the mean rather than the variiability of results, making it is more useful for understanding whether the difference between the two groups is significant by looking for overlapping error bars.
+
 
 ### Figure 5
 
@@ -405,6 +417,11 @@ figure_5_graph_original
 figure_5_graph_improved
 
 ```
+five only:
+-Added sample sizes to legend as same for each point within intervention group for transparency 
+-Reduced y axis range to make the differences in points more obvious as the gaps between means would be more significant for smaller means
+
+
 
 ## Task 2: FAIR data principles
 
