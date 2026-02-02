@@ -156,7 +156,7 @@ improved_PPD_plot
 
 -Intervention groups caption added, making the x-axis less clustered 
 
--Added a legend title, clarifying what the legend is referring to   
+-Added a legend title, clarifying what the legend is referring to  
 
 
 
